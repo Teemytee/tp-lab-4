@@ -1,36 +1,39 @@
-#ifndef AUTOMATA_H
-#define AUTOMATA_H
+#ifndef AUTOMATA_AUTOMATA_H
+#define AUTOMATA_AUTOMATA_H
 
-#include <string>
 #include <iostream>
-#include <ctime>
+#include <string>
+#include <chrono>
+#include <thread>
 
 using namespace std;
 
-class Automata {
+enum STATES { OFF, WAIT, ACCEPT, CHECK, COOK };
+class Automata{
 private:
-	enum STATES { OFF, WAIT, CHECK, ACCEPT, COOKING };
-	int cash, num = -1;
-	string menu[3] = { "tea", "americano", "latte" };
-	int prices[3] = { 30, 50, 50 };
-	STATES state;
-	void changeState();
-	void printMenu();
-	void cook();
-	bool finish();
+	int state;
+	int cash;
+	string menu[6] = { "TEA", "AMERICANO", "LATTE", "HOT CHOCOLATE", "HOT MILK", "HOT WATER" };
+	int prices[6] = { 20, 30, 40, 50, 35, 20 };
 
 public:
-
 	Automata();
-	string On();
-	void Off();
-	void Choice(int a);
-	int Coin(int a);
-	int getCash();
-	int getNum();
-	int getChange();
-	void Cancel();
+	string on();
+	string off();
+	void coin(int x);
+	void printMenu();
+	void printState();
+	string  choice(int num);
+	bool check(int num) const;
+	void cancel();
+	void cook(int num);
+	void finish();
+	int getcash() const;
+	const int getstate() const;
+
 };
+
+
 
 
 #endif

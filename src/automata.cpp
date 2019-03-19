@@ -1,166 +1,128 @@
-#include "Automata.h"
+#include "automata.h"
 using namespace std;
-void WAITFor(double seconds){
-	clock_t endWAIT;
-	endWAIT = static_cast<clock_t>(clock() + seconds * CLOCKS_PER_SEC);
-	while (clock() < endWAIT) {}
+
+Automata::Automata() {
+	this->state = OFF;
+	this->cash = 0;
 }
 
-void table(){
-	cout << "\n___________________\n";
-}
-
-Automata::Automata(){
-	cash = 0; 
-	state = OFF;
-	num = -1;
-}
-
-string Automata::On() {
+string Automata::on(){
 	if (state == OFF) {
-		cout << "\nЧтобы включить автомат нажмите - on\n";
-		state = WAIT; 
-		table();
-		cout << "Автомат готов";
-		table();
-		changeState();
-		return "Ready";
-	}
-	else return "Already on";
-}
-
-void Automata::changeState() {
-	switch (state){
-	case OFF:
-		table();
-		cout << "***Автомат не работает***";
-		table();
-		break;
-	case WAIT:{
-		if (num == -1){
-			table();
-			cout << "Введите деньги или выберите напиток...";
-			table();
-			break;
-		}
-		else{
-			table();
-			cout << "Введите деньги или отмените заказ";
-			table();
-			break;
-		}
-
-	}
-	case ACCEPT:{
-		table();
-		cout << "Баланс: " << cash;
-		table();
-		if (num != -1){
-			state = CHECK;
-			changeState();
-			break;
-		}
 		state = WAIT;
-		changeState();
+		return "THE MACHINE HAS TURNED ON";
+	}
+	else
+		return "THE MACHINE HAS ALREADY TURNED ON";
+}
+
+string Automata::off(){
+	if (state == COOK) {
+		return "WAIT. COOKING";
+	}
+	else {
+		cancel();
+		state = OFF;
+		return "THE MACHINE HAS TURNED OFF";
+	}
+}
+
+void Automata::coin(int x){
+	switch (state){
+	case(OFF) :
+		break;
+	case(WAIT) :
+		state = ACCEPT;
+		cash = x;
+		break;
+	case(ACCEPT) :
+		cash += x;
+		break;
+	case(CHECK) :
+		state = ACCEPT;
+		cash += x;
+		break;
+	case(COOK) :
 		break;
 	}
-	case CHECK:{
-		if (cash < prices[num]){
-			table();
-			cout << "Недостаточно средств\nДобавьте деньги или отмените заказ..";
-			cout << "\nВам нужно как минимум " << prices[num] - cash << "рублей";
-			table();
-			state = WAIT;
-			changeState();
+}
+
+void Automata::printMenu() {
+	for (int i = 0; i < (sizeof(this->prices) / 4); i++)
+		cout << i + 1 << ": " << this->menu[i] << endl;
+}
+
+void Automata::printState() {
+	switch (state){
+	case(OFF) :
+		cout << "OFF" << endl;
+		break;
+	case(WAIT) :
+		cout << "WAIT" << endl;
+		break;
+	case(ACCEPT) :
+		cout << "ACCEPT" << endl;
+		break;
+	case(CHECK) :
+		cout << "CHECK" << endl;
+		break;
+	case(COOK) :
+		cout << "COOK" << endl;
+		break;
+	}
+}
+
+string Automata::choice(int num) {
+	if (state == COOK){
+		return "WAIT. COOKING";
+	}
+	else {
+		if ((num < 1) or(num >(sizeof(this->prices) / 4))){
+			return "ERROR. INVALID NUMBER";
 		}
-		else{
-			cook();
-		};
-		break;
+		else {
+			num = num - 1;
+			if (check(num)) {
+				state = COOK;
+				cook(num);
+				cash = cash - prices[num];
+				cancel();
+				return "ENJOY YOUR DRINK";
+			}
+			else
+				return "ERROR. NOT ENOUGHT MONEY";
+		}
 	}
-	case COOKING:
-		cook();
-		finish();
-		break;
+}
+
+bool Automata::check(int num) const {
+	if (cash >= prices[num])
+		return true;
+	else
+		return false;
+}
+
+
+
+void Automata::cancel(){
+	if (cash) {
+		cash = 0;
+		state = WAIT;
 	}
 }
 
-
-void Automata::Choice(int a){
-	printMenu();
-	cout << "\n================================\nВведите номер напитка: " << a << endl;
-	cout << "================================\n";
-	num = a - 1;
-	cout << "\n================================\nВыбранный напиток " << menu[num] << endl << "================================\n";
-	state = CHECK;
-	changeState();
-}
-
-void Automata::Cancel(){
-	cout << "\n================================\nВозвращаем " << cash << "рублей..\n";
-	cout << "================================\n";
-	cash = 0;
-	state = WAIT;
-	changeState();
-}
-
-int Automata::Coin(int a){
-	if (state == OFF){
-		cout << "\nАвтомат готов\n";
-	}
-	state = ACCEPT;
-	cash = cash + a;
-	changeState();
-	return cash;
-}
-
-int Automata::getCash(){
-	return cash;
-}
-
-int Automata::getNum(){
-	return num;
-}
-
-int Automata::getChange(){
-	return prices[num] - cash;
-}
-
-
-void Automata::printMenu(){
-	int menuSize = sizeof(prices) / sizeof(int);
-	table();
-	for (int i = 0; i < menuSize; i++){
-		cout << i + 1 << ": " << menu[i] << " - " << prices[i] << "\n";
-	}
-	cout << "================================\n";
-}
-
-void Automata::cook(){
-	table();
-	if (cash - prices[num] != 0){
-		cout << "\nНе забудьте сдачу: " << cash - prices[num] << "рублей" << endl;
-	}
-	cout << "\nГотовится";
-	table();
+void Automata::cook(int num) {
+	//sleep_for(5s);
 	finish();
 }
 
-bool Automata::finish(){
-	table();
-	cout << "Ваш напиток готов\n";
-	table();
+void Automata::finish() {
 	state = WAIT;
-	cash = 0;
-	num = -1;
-	changeState();
-	return 1;
 }
 
-void Automata::Off(){
-	cout << "\nЗавершение...\n";
-	state = OFF;
-	cash = 0;
-	num = -1;
-	changeState();
+int Automata::getcash() const{
+	return cash;
+}
+
+const int Automata::getstate() const{
+	return state;
 }

@@ -1,55 +1,159 @@
 #include "gtest/gtest.h"
-#include "Automata.h"
+#include "automata.h"
 #include <string>
 
 using namespace std;
 
-Automata a;
+//simple
+TEST(lab4, scene1)
+{
+	Automata nc;
+	string h = nc.on();
+	EXPECT_EQ("THE MACHINE HAS TURNED ON", h);
 
-TEST(Test, ON) {
-	string temp = a.On();
-	EXPECT_EQ("Ready", temp);
+	nc.coin(10);
+	int c = nc.getcash();
+	EXPECT_EQ(10, c);
+
+	nc.coin(30);
+	EXPECT_EQ(ACCEPT, nc.getstate());
+
+	string ans = nc.choice(2);
+	EXPECT_EQ("ENJOY YOUR DRINK", ans);
+}
+// double on()
+TEST(lab4, scene2)
+{
+	Automata nc;
+	string h = nc.on();
+	EXPECT_EQ("THE MACHINE HAS TURNED ON", h);
+	h = nc.on();
+	EXPECT_EQ("THE MACHINE HAS ALREADY TURNED ON", h);
+
+	nc.coin(10);
+	int c = nc.getcash();
+	EXPECT_EQ(10, c);
+
+	nc.coin(30);
+	EXPECT_EQ(ACCEPT, nc.getstate());
+
+	string ans = nc.choice(2);
+	EXPECT_EQ("ENJOY YOUR DRINK", ans);
+}
+//off
+TEST(lab4, scene3)
+{
+	Automata nc;
+	string h = nc.on();
+	EXPECT_EQ("THE MACHINE HAS TURNED ON", h);
+
+	nc.coin(10);
+	int c = nc.getcash();
+	EXPECT_EQ(10, c);
+
+	nc.coin(30);
+	EXPECT_EQ(ACCEPT, nc.getstate());
+
+	string ans = nc.choice(2);
+	EXPECT_EQ("ENJOY YOUR DRINK", ans);
+
+	ans = nc.off();
+	EXPECT_EQ("THE MACHINE HAS TURNED OFF", ans);
 }
 
-TEST(Test, twoCoins) {
-	a.Coin(30);
-	a.Coin(3);
-	EXPECT_EQ(33, a.getCash());
+//not enough money
+TEST(lab4, scene4)
+{
+	Automata nc;
+	nc.on();
+	nc.coin(10);
+	string ans = nc.choice(2);
+	EXPECT_EQ("ERROR. NOT ENOUGHT MONEY", ans);
+	nc.off();
 }
 
-TEST(Test, Cancel) {
-	a.Coin(35);
-	a.Cancel();
-	a.Coin(1);
-	EXPECT_EQ(1, a.getCash());
+//wrong number of drinks
+TEST(lab4, scene5)
+{
+	Automata nc;
+	nc.on();
+	nc.coin(50);
+	string ans = nc.choice(16);
+	EXPECT_EQ("ERROR. INVALID NUMBER", ans);
+	nc.off();
+}
+//another one simple (WAIT AFTER FINISH)
+TEST(lab4, scene6)
+{
+	Automata nc;
+	string h = nc.on();
+	EXPECT_EQ("THE MACHINE HAS TURNED ON", h);
+
+	nc.coin(10);
+	int c = nc.getcash();
+	EXPECT_EQ(10, c);
+
+	nc.coin(30);
+	EXPECT_EQ(ACCEPT, nc.getstate());
+
+	string ans = nc.choice(2);
+	EXPECT_EQ("ENJOY YOUR DRINK", ans);
+
+	EXPECT_EQ(WAIT, nc.getstate());
 }
 
-TEST(Test, finish) {
-	a.Coin(60);
-	a.Choice(1);
-	EXPECT_EQ(0, a.getCash());
-	EXPECT_EQ(-1, a.getNum());
+//another one simple (CASH AFTER FINISH)
+TEST(lab4, scene7)
+{
+	Automata nc;
+	string h = nc.on();
+	EXPECT_EQ("THE MACHINE HAS TURNED ON", h);
+
+	nc.coin(10);
+	int c = nc.getcash();
+	EXPECT_EQ(10, c);
+
+	nc.coin(30);
+	EXPECT_EQ(ACCEPT, nc.getstate());
+
+	string ans = nc.choice(2);
+	EXPECT_EQ("ENJOY YOUR DRINK", ans);
+
+	EXPECT_EQ(WAIT, nc.getstate());
+
+	EXPECT_EQ(0, nc.getcash());
 }
 
-TEST(Test, Cancel2) {
-	a.Coin(35);
-	a.Coin(10);
-	a.Choice(2);
-	a.Cancel();
-	a.Coin(30);
-	a.Choice(1);
-	EXPECT_EQ(0, a.getCash());
-	EXPECT_EQ(-1, a.getNum());
+
+// choosing after an error(number of drink)
+TEST(lab4, scene8)
+{
+	Automata nc;
+	nc.on();
+	nc.coin(50);
+	nc.choice(16);
+
+	string ans = nc.choice(1);
+	EXPECT_EQ("ENJOY YOUR DRINK", ans);
+
+	nc.off();
 }
 
-TEST(Test, OFF) {
-	a.Coin(29);
-	a.Off();
-	EXPECT_EQ(0, a.getCash());
-	EXPECT_EQ(-1, a.getNum());
+// choosing after an error(money)
+TEST(lab4, scene9)
+{
+	Automata nc;
+	nc.on();
+	nc.coin(10);
+	string ans = nc.choice(1);
+	EXPECT_EQ("ERROR. NOT ENOUGHT MONEY", ans);
+
+	nc.coin(10);
+	EXPECT_EQ(20, nc.getcash());
+
+	ans = nc.choice(1);
+	EXPECT_EQ("ENJOY YOUR DRINK", ans);
+
+	nc.off();
 }
 
-TEST(Test, On_while_working) {
-	a.Coin(29);
-	EXPECT_EQ("Already on", a.On());
-}
