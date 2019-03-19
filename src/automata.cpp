@@ -1,128 +1,124 @@
-#include "automata.h"
-using namespace std;
+#include "Automata.h"
 
-Automata::Automata() {
-	this->state = OFF;
+Automata::Automata()
+{
+	this->money = 100;
 	this->cash = 0;
+	this->state = 0;
+};
+void Automata::on()
+{
+	this->state = 1;
+	this->printState();
 }
-
-string Automata::on(){
-	if (state == OFF) {
-		state = WAIT;
-		return "THE MACHINE HAS TURNED ON";
+void Automata::off()
+{
+	this->state = 0;
+}
+void Automata::coin(double money)
+{
+	if (state != 0)
+	{
+		this->state = 2;
+		this->printState();
+		this->cash = money;
 	}
 	else
-		return "THE MACHINE HAS ALREADY TURNED ON";
-}
-
-string Automata::off(){
-	if (state == COOK) {
-		return "WAIT. COOKING";
+	{
+		std::cout << "THE AUTOMATA IS OFF NOW, PLS TURN ON TO START" << std::endl;
+		return;
 	}
-	else {
-		cancel();
-		state = OFF;
-		return "THE MACHINE HAS TURNED OFF";
-	}
-}
 
-void Automata::coin(int x){
-	switch (state){
-	case(OFF) :
-		break;
-	case(WAIT) :
-		state = ACCEPT;
-		cash = x;
-		break;
-	case(ACCEPT) :
-		cash += x;
-		break;
-	case(CHECK) :
-		state = ACCEPT;
-		cash += x;
-		break;
-	case(COOK) :
-		break;
-	}
 }
-
-void Automata::printMenu() {
-	for (int i = 0; i < (sizeof(this->prices) / 4); i++)
-		cout << i + 1 << ": " << this->menu[i] << endl;
-}
-
-void Automata::printState() {
-	switch (state){
-	case(OFF) :
-		cout << "OFF" << endl;
-		break;
-	case(WAIT) :
-		cout << "WAIT" << endl;
-		break;
-	case(ACCEPT) :
-		cout << "ACCEPT" << endl;
-		break;
-	case(CHECK) :
-		cout << "CHECK" << endl;
-		break;
-	case(COOK) :
-		cout << "COOK" << endl;
-		break;
-	}
-}
-
-string Automata::choice(int num) {
-	if (state == COOK){
-		return "WAIT. COOKING";
-	}
-	else {
-		if ((num < 1) or(num >(sizeof(this->prices) / 4))){
-			return "ERROR. INVALID NUMBER";
-		}
-		else {
-			num = num - 1;
-			if (check(num)) {
-				state = COOK;
-				cook(num);
-				cash = cash - prices[num];
-				cancel();
-				return "ENJOY YOUR DRINK";
-			}
-			else
-				return "ERROR. NOT ENOUGHT MONEY";
+void  Automata::printMenu()
+{
+	if (this->state != 0)
+	{
+		for (auto i = 0; i < 6; i++)
+		{
+			std::cout << "To select " << menu[i] << " (" << price[i] << "$) press " << i << std::endl;
 		}
 	}
-}
-
-bool Automata::check(int num) const {
-	if (cash >= prices[num])
-		return true;
 	else
-		return false;
+	{
+		std::cout << "THE AUTOMATA IS OFF NOW, PLS TURN ON TO START" << std::endl;
+	}
+
 }
+unsigned int Automata::printState()
+{
+	std::cout << cur_state[this->state] << std::endl;
+	return this->state;
+}
+//
+bool  Automata::check(int choice)
+{
+	if (this->state = 3)
+	{
+		if (cash < price[choice])
+		{
+			std::cout << "You have no enough money. Add more or cancel the operation";
+			return false;
+		}
+		else
+		{
+			return true;
+		}
+	}
 
-
-
-void Automata::cancel(){
-	if (cash) {
+}
+void  Automata::choice(int choice)
+{
+	this->state = 3;
+	this->printState();
+	bool response = check(choice);
+	if (response == true)
+	{
+		cook(choice);
+	}
+}
+double  Automata::cancel()
+{
+	if (this->state != 0)
+	{
+		double change = cash;
 		cash = 0;
-		state = WAIT;
+		std::cout << "Please take your money ( " << change << "$ ) !" << std::endl;
+		this->state = 1;
+		return change;
+	}
+	else
+	{
+		std::cout << "THE AUTOMATA IS OFF NOW, PLS TURN ON TO START" << std::endl;
 	}
 }
+void  Automata::cook(int choice)
+{
+	if (state = 3)
+	{
+		this->state = 4;
+		this->printState();
+		this->money += price[choice];
+		this->cash -= price[choice];
+		char a = 177, b = 219;
+		std::cout << "\n\n\nPlease take your " << menu[choice] << "!\n ";
+	}
 
-void Automata::cook(int num) {
-	//sleep_for(5s);
-	finish();
 }
+double  Automata::finish()
+{
+	if (cash > 0)
+	{
+		std::cout << "\nKeep your change " << cash << " !" << std::endl;
+		double change = cash;
+		cash = 0;
+		state = 1;
+		this->state = 1;
+		this->printState();
+		return change;
 
-void Automata::finish() {
-	state = WAIT;
-}
-
-int Automata::getcash() const{
-	return cash;
-}
-
-const int Automata::getstate() const{
-	return state;
+	}
+	this->state = 1;
+	this->printState();
+	return 0;
 }
